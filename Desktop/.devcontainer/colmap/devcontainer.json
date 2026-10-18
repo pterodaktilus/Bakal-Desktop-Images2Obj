@@ -1,0 +1,11 @@
+{
+  "name": "COLMAP",
+  "build": {
+    "dockerfile": "../../colmap/DockerFile",
+    "context": "../../colmap"
+  },
+  "runArgs": ["--gpus", "all"],
+  "workspaceMount": "source=${localWorkspaceFolder}/workspace,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "overrideCommand": true
+}

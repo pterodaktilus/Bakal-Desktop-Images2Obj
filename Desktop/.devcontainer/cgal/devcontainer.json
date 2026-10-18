@@ -1,0 +1,11 @@
+{
+  "name": "CGAL",
+  "build": {
+    "dockerfile": "../../cgal/DockerFile",
+    "context": "../../cgal"
+  },
+  "runArgs": ["--gpus", "all"],
+  "workspaceMount": "source=${localWorkspaceFolder}/workspace,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "overrideCommand": true
+}

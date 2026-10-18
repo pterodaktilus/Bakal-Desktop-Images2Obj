@@ -1,0 +1,21 @@
+ARG UBUNTU_VERSION=26.04
+ARG NVIDIA_CUDA_VERSION=13.4.3
+
+
+FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    libcgal-dev \
+    build-essential cmake g++ \
+    git && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+CMD ["bash"]

@@ -1,0 +1,24 @@
+services:
+  cgal:
+    build:
+      context: ./cgal
+      dockerfile: DockerFile
+    working_dir: /workspace
+    volumes:
+      - ./workspace:/workspace
+    stdin_open: true
+    tty: true
+    gpus: all
+    command: ["bash"]
+
+  colmap:
+    build:
+      context: ./colmap
+      dockerfile: DockerFile
+    working_dir: /workspace
+    volumes:
+      - ./workspace:/workspace
+    stdin_open: true
+    tty: true
+    gpus: all
+    command: ["bash"]
