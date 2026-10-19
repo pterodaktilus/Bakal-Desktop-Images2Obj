@@ -3,9 +3,10 @@ services:
     build:
       context: ./cgal
       dockerfile: DockerFile
-    working_dir: /workspace
+    working_dir: /cgal
     volumes:
-      - ./workspace:/workspace
+    - ./cgal:/cgal
+    - ./colmap:/colmap
     stdin_open: true
     tty: true
     gpus: all
@@ -15,9 +16,10 @@ services:
     build:
       context: ./colmap
       dockerfile: DockerFile
-    working_dir: /workspace
+    working_dir: /colmap
     volumes:
-      - ./workspace:/workspace
+    - ./cgal:/cgal
+    - ./colmap:/colmap
     stdin_open: true
     tty: true
     gpus: all
