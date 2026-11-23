@@ -2,19 +2,17 @@ from pathlib import Path
 
 
 class ColmapsConfig:
-    def __init__(self) -> None:
+    def __init__(self, dataset_dir, output_dir) -> None:
         # --------------------------------------------------
         # Paths
         # --------------------------------------------------
-        self.images = Path.cwd() / "imgs"
-
-        self.output = Path.cwd() / "done"
-
-        self.database = self.output / "database.db"
-        self.image_list = self.output / "selected-images.txt"
-        self.sparse = self.output / "sparse"
-        self.dense = self.output / "dense"
-        self.model = self.output / "model"
+        self.output = output_dir
+        self.images = dataset_dir / "images"
+        self.database = output_dir / "database.db"
+        self.image_list = output_dir / "selected-images.txt"
+        self.sparse = output_dir / "sparse"
+        self.dense = output_dir / "dense"
+        self.model = output_dir / "model"
 
         self.depth_maps = self.dense / "stereo" / "depth_maps"
         self.normal_maps = self.dense / "stereo" / "normal_maps"

@@ -1,13 +1,18 @@
 import shutil
 from pathlib import Path
+import sys
 
-from ColmapsReconstruction import ColmapsReconstruction
-from ColmapMeshPipeline import ColmapMeshPipeline
+from something.ColmapsReconstruction import ColmapsReconstruction
+from something.ColmapMeshPipeline import ColmapMeshPipeline
 
 
 class Reconstruct(ColmapsReconstruction):
     """Prepare the workspace and coordinate the reconstruction pipeline."""
-    IMAGE_EXTENSIONS = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff",".dng"}
+    IMAGE_EXTENSIONS = {".bmp", ".jpeg",
+                        ".jpg", ".png", ".tif", ".tiff", ".dng"}
+
+    def __init__(self, dataset_dir, out_dir):
+        super().__init__(dataset_dir, out_dir)
 
     def prepare_workspace(self) -> None:
         if not self.images.is_dir():
@@ -25,7 +30,7 @@ class Reconstruct(ColmapsReconstruction):
         all_image_names = sorted(
             path.name
             for path in self.images.iterdir()
-                if path.is_file() and path.suffix.lower() in self.IMAGE_EXTENSIONS
+            if path.is_file() and path.suffix.lower() in self.IMAGE_EXTENSIONS
         )
         if not all_image_names:
             raise RuntimeError(f"No images found in {self.images}")
@@ -49,15 +54,20 @@ class Reconstruct(ColmapsReconstruction):
         self.dense.mkdir(exist_ok=True)
 
 
-def run_pipeline() -> Path:
-    reconstruction = Reconstruct()
-    #reconstruction.prepare_workspace()
-    #reconstruction.run()
-    mesh_pipeline = ColmapMeshPipeline()
-    mesh_pipeline.run(mesher="open3d")
-    return reconstruction.output
+def run_pipeline(dataset_dir: Path, output_dir: Path) -> Path:
+    reconstruction = Reconstruct(dataset_dir, output_dir)
+    reconstruction.prepare_workspace()
+    reconstruction.run()
+    mesh_pipeline = ColmapMeshPipeline(dataset_dir, output_dir)
+
+    return mesh_pipeline.run(mesher="open3d")
 
 
 if __name__ == "__main__":
-    run_pipeline()
+    arguments = sys.argv
+    if len(arguments) < 3:
+        exit(-1)
+    dataset_path = Path(arguments[1]).resolve()
+    out_path = Path(arguments[2]).resolve()
 
+    run_pipeline(dataset_path, out_path)

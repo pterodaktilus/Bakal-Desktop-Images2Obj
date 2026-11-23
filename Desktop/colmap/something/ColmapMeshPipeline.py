@@ -5,7 +5,7 @@ from typing import Literal
 import numpy as np
 import open3d as o3d
 
-from ColmapsReconstruction import ColmapsReconstruction
+from something.ColmapsReconstruction import ColmapsReconstruction
 
 
 Mesher = Literal["poisson", "delaunay", "advancing-front", "open3d"]
@@ -46,6 +46,9 @@ class ColmapMeshPipeline(ColmapsReconstruction):
     MESHERS = ("poisson", "delaunay", "advancing-front", "open3d")
     SIMPLIFIERS = ("colmap", "open3d")
 
+    def __init__(self, dataset_dir, out_dir):
+        super().__init__(dataset_dir, out_dir)
+
     @staticmethod
     def _require_nonempty_file(path: Path, description: str) -> None:
         if not path.is_file():
@@ -69,7 +72,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
             )
 
         started_at = time.perf_counter()
-        log(f"Open3D point-cloud loading started | input={self.fused_point_cloud}")
+        log(
+            f"Open3D point-cloud loading started | input={self.fused_point_cloud}")
         cloud = o3d.io.read_point_cloud(
             str(self.fused_point_cloud),
             remove_nan_points=True,
@@ -100,7 +104,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
             )
         )
         if not mesh.has_vertices() or not mesh.has_triangles():
-            raise RuntimeError("Open3D Poisson reconstruction produced an empty mesh.")
+            raise RuntimeError(
+                "Open3D Poisson reconstruction produced an empty mesh.")
         log_mesh("Open3D Poisson meshing complete", mesh, started_at)
 
         density_values = np.asarray(densities)
@@ -235,7 +240,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
                 f"{', '.join(self.SIMPLIFIERS)}"
             )
 
-        output_path = self._derived_path(input_path, "simplified")
+
+        output_path = self.output / "mesh.ply"
         if simplifier == "open3d":
             started_at = time.perf_counter()
             mesh = o3d.io.read_triangle_mesh(
@@ -320,7 +326,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
             print_progress=True,
         )
         if not mesh.has_vertices() or not mesh.has_triangles():
-            raise RuntimeError(f"Open3D could not read mesh geometry: {input_path}")
+            raise RuntimeError(
+                f"Open3D could not read mesh geometry: {input_path}")
 
         mesh.remove_degenerate_triangles()
         mesh.remove_duplicated_triangles()
@@ -328,7 +335,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
         mesh.remove_non_manifold_edges()
         mesh.remove_unreferenced_vertices()
         if not mesh.has_vertices() or not mesh.has_triangles():
-            raise RuntimeError("Open3D cleanup removed all usable mesh geometry.")
+            raise RuntimeError(
+                "Open3D cleanup removed all usable mesh geometry.")
 
         mesh.compute_triangle_normals()
         mesh.compute_vertex_normals()
@@ -344,7 +352,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
             write_vertex_colors=True,
             print_progress=True,
         ):
-            raise RuntimeError(f"Open3D failed to write cleaned mesh: {output_path}")
+            raise RuntimeError(
+                f"Open3D failed to write cleaned mesh: {output_path}")
         self._require_nonempty_file(output_path, "Cleaned mesh")
         return output_path, mesh
 
@@ -431,7 +440,8 @@ class ColmapMeshPipeline(ColmapsReconstruction):
         albedo = (textures["albedo"].clip(0, 1) * 255).to(
             o3d.core.Dtype.UInt8
         )
-        tensor_mesh.material.texture_maps["albedo"] = o3d.t.geometry.Image(albedo)
+        tensor_mesh.material.texture_maps["albedo"] = o3d.t.geometry.Image(
+            albedo)
 
         log(f"Open3D GLB export started | output={output_path}")
         if not o3d.t.io.write_triangle_mesh(str(output_path), tensor_mesh):
@@ -446,30 +456,30 @@ class ColmapMeshPipeline(ColmapsReconstruction):
     def run(
         self,
         mesher: Mesher = "poisson",
-        export_glb: bool = True,
+        export_glb: bool = False,
         simplifier: Simplifier | None = None,
-    ) -> dict[str, Path]:
+    ) -> Path:
         """Run the hybrid COLMAP/Open3D mesh pipeline."""
         started_at = time.perf_counter()
         if simplifier is None:
             simplifier = "open3d" if mesher == "open3d" else "colmap"
         surface_mesh = self.create_surface(mesher)
         simplified_mesh = self.simplify_mesh(surface_mesh, simplifier)
-        cleaned_mesh, open3d_mesh = self.clean_mesh(simplified_mesh)
-        textured_mesh, texture_atlas = self.texture_mesh(cleaned_mesh)
+        #cleaned_mesh, open3d_mesh = self.clean_mesh(simplified_mesh)
+        #textured_mesh, texture_atlas = self.texture_mesh(cleaned_mesh)
 
-        outputs = {
-            "surface_mesh": surface_mesh,
-            "simplified_mesh": simplified_mesh,
-            "cleaned_mesh": cleaned_mesh,
-            "textured_mesh": textured_mesh,
-            "texture_atlas": texture_atlas,
-        }
-        if export_glb:
-            outputs["glb"] = self.export_vertex_color_glb(
-                open3d_mesh,
-                self.textured_mesh,
-            )
+        #outputs = {
+        #    "surface_mesh": surface_mesh,
+        #    "simplified_mesh": simplified_mesh,
+        #    #"cleaned_mesh": cleaned_mesh,
+        #    #"textured_mesh": textured_mesh,
+        #    #"texture_atlas": texture_atlas,
+        #}
+        #if export_glb:
+        #    outputs["glb"] = self.export_vertex_color_glb(
+        #        open3d_mesh,
+        #        self.textured_mesh,
+        #    )
 
         log(f"Mesh pipeline complete | time={elapsed_since(started_at)}")
-        return outputs
+        return simplified_mesh

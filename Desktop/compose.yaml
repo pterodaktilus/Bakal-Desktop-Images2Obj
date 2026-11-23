@@ -5,8 +5,8 @@ services:
       dockerfile: DockerFile
     working_dir: /cgal
     volumes:
-    - ./cgal:/cgal
-    - ./colmap:/colmap
+      - ./cgal:/cgal
+      - ./colmap:/colmap
     stdin_open: true
     tty: true
     gpus: all
@@ -18,9 +18,11 @@ services:
       dockerfile: DockerFile
     working_dir: /colmap
     volumes:
-    - ./cgal:/cgal
-    - ./colmap:/colmap
+      - ./cgal:/cgal
+      - ./colmap:/colmap
     stdin_open: true
     tty: true
     gpus: all
-    command: ["bash"]
+    command: ["python3", "-m", "ruhmakuworker.serve"]
+    ports:
+      - "127.0.0.1:8000:8000"

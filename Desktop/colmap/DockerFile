@@ -72,7 +72,7 @@ RUN cd /colmap && \
     -DCMAKE_INSTALL_PREFIX=/colmap-install \
     -DCMAKE_BUILD_TYPE=Release \
     -DBLA_VENDOR=FLAME && \
-    ninja -j4 install
+    ninja install
 
 #
 # Stage to export build caches for CI round-tripping via actions/cache.
@@ -121,3 +121,11 @@ RUN apt-get update && \
 # a library. For instance, CMake will be able to find COLMAP easily with the
 # command: find_package(COLMAP REQUIRED).
 COPY --from=builder /colmap-install/ /usr/local/
+# In-container GPU execution (no distrobox host-exec on a real GPU host).
+ENV JOBS_DIR=/data/jobs \
+    PORT=8000 \
+    HOST_EXEC="" \
+    MAX_CONCURRENT=1
+EXPOSE 8000
+CMD ["python3", "ruhmakuworker/serve.py"]
+

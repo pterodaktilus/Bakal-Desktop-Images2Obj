@@ -2,14 +2,13 @@ import open3d as o3d
 import numpy as np
 import pymeshlab
 import time
-from config import ColmapsConfig
-from mesh_logging import elapsed_since, log, log_mesh
+from something.config import ColmapsConfig
+from something.mesh_logging import elapsed_since, log, log_mesh
 
 
 class MVSOpen3d(ColmapsConfig):
-    def __init__(self) -> None:
-        super().__init__()
-        self.cloud = None
+    def __init__(self, dataset_dir, output_dir):
+        super().__init__(dataset_dir, output_dir)
 
     def LoadPoinCloud(self) -> None:
         started_at = time.perf_counter()

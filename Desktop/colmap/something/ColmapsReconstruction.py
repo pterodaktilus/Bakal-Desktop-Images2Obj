@@ -3,14 +3,14 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from config import ColmapsConfig
+from something.config import ColmapsConfig
 
 
 class ColmapsReconstruction(ColmapsConfig):
     """COLMAP reconstruction, meshing, and export stages."""
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, dataset_dir:Path,out_dir:Path) -> None:
+        super().__init__(dataset_dir, out_dir)
         self.selected_image_names: list[str] = []
 
     @staticmethod
