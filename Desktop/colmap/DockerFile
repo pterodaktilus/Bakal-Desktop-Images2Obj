@@ -8,7 +8,7 @@ ARG NVIDIA_CUDA_VERSION=13.4.3
 #
 FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION} AS builder
 
-ARG CUDA_ARCHITECTURES=all-major
+ARG CUDA_ARCHITECTURES=89
 ARG CCACHE_MAXSIZE=500M
 ENV QT_XCB_GL_INTEGRATION=xcb_egl
 ENV CCACHE_DIR=/colmap/build/.ccache
@@ -71,8 +71,9 @@ RUN cd /colmap && \
     -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES} \
     -DCMAKE_INSTALL_PREFIX=/colmap-install \
     -DCMAKE_BUILD_TYPE=Release \
+    -DONNX_ENABLED=OFF \
     -DBLA_VENDOR=FLAME && \
-    ninja install
+    ninja -j2 install
 
 #
 # Stage to export build caches for CI round-tripping via actions/cache.
@@ -111,9 +112,16 @@ RUN apt-get update && \
     libblis4 \
     libmpfr6 \
     libgmp10 \
+    python3 \   
+    python3-pip python3-venv \
     libflame1t64 && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 
+
+WORKDIR /opt/colmap-env
+COPY prepare_enviroment.sh requirements.txt ./
+RUN bash -e ./prepare_enviroment.sh
+ENV PATH="/opt/colmap-env/.venv/bin:${PATH}"
 # Copy all files from /colmap-install/ in the builder stage to /usr/local/ in
 # the runtime stage. This simulates installing COLMAP in the default location
 # (/usr/local/), which simplifies environment variables. It also allows the user

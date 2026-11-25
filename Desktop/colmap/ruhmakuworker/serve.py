@@ -287,6 +287,7 @@ def _run_job(job_id: str, ds_dir: str) -> None:
     try:
         output_dir = Path(tempfile.mkdtemp(prefix="colmap-", dir=dataset_dir))
         mesh_path = output_dir / "mesh.ply"
+        f32_path = output_dir / "mesh.f32"
         log_path = output_dir / "colmap.log"
         command = [
             sys.executable, "-u", "-m", "something.main",
@@ -315,6 +316,8 @@ def _run_job(job_id: str, ds_dir: str) -> None:
             error = f"COLMAP exited with code {exit_code}: {_log_tail(log_path)}"
         elif not mesh_path.is_file() or mesh_path.stat().st_size == 0:
             error = "COLMAP finished without producing a nonempty mesh.ply"
+        elif not f32_path.is_file() or f32_path.stat().st_size == 0:
+            error = "COLMAP finished without producing a nonempty mesh.f32"
     except OSError as exc:
         error = f"COLMAP job failed: {exc}"
 
@@ -328,7 +331,7 @@ def _run_job(job_id: str, ds_dir: str) -> None:
         elif error is not None:
             job.update(state="error", error=error)
         else:
-            job.update(state="done", ply=str(mesh_path))
+            job.update(state="done", ply=str(f32_path))
 
 
 
@@ -488,7 +491,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json(409, {"error": f"state={j.get('state')}"})
                 ply = j["ply"]
                 self.send_response(200)
-                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Type", "application/vnd.rumahku.mesh-f32")
                 self.send_header("Content-Length", str(os.path.getsize(ply)))
                 self.end_headers()
                 with open(ply, "rb") as f:

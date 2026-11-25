@@ -4,6 +4,7 @@ import sys
 
 from something.ColmapsReconstruction import ColmapsReconstruction
 from something.ColmapMeshPipeline import ColmapMeshPipeline
+from something.ply2f32converter import write_android_mesh
 
 
 class Reconstruct(ColmapsReconstruction):
@@ -70,4 +71,5 @@ if __name__ == "__main__":
     dataset_path = Path(arguments[1]).resolve()
     out_path = Path(arguments[2]).resolve()
 
-    run_pipeline(dataset_path, out_path)
+    mesh_path = run_pipeline(dataset_path, out_path)
+    write_android_mesh(mesh_path, out_path / "mesh.f32")
